@@ -9,7 +9,8 @@ license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 dependencies = [
-    "plotly"
+    "plotly",
+    "numpy"
 ]
 
 [project.optional-dependencies]
