@@ -4,3 +4,5 @@ shapes in plotly
 """
 
 __version__ = "0.1.0"
+
+from .shapes import *

@@ -35,3 +35,13 @@ def box(
     )
 
     return mesh
+
+
+def prism() -> go.Mesh3d:
+    return go.Mesh3d()
+
+
+def cone() -> go.Mesh3d:
+    return go.Mesh3d()
+
+
