@@ -1,0 +1,20 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "plotly_3d_primitives"
+authors = [{name = "Connor Ferster", email = "connor@structuralpython.com"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version", "description"]
+dependencies = [
+    "plotly"
+]
+
+[project.optional-dependencies]
+dev = ["black"]
+
+
+[project.urls]
+Home = "https://github.com/structuralpython/plotly_3d_primitives"
