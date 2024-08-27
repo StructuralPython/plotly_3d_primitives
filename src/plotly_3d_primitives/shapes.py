@@ -1,33 +1,28 @@
 import plotly.graph_objects as go
 import numpy as np
+from typing import Optional
 
 
-def box(
-    b: float,
-    d: float,
-    h: float,
-    align: list[str],
-    anchor: tuple = (0, 0, 0),
+def cube(
+    center=(0.0, 0.0, 0.0),
+    x_length=1.0,
+    y_length=1.0,
+    z_length=1.0,
+    bounds: Optional[tuple[float]] = None,
     color: str = "#aaaaaa",
     opacity: float = 0.5,
 ) -> go.Mesh3d:
+    if bounds is not None and len(bounds) == 6:
+        x0, x1, y0, y1, z0, z1 = bounds
+    else:
+        x0 = center[0] - x_length / 2
+        x1 = center[0] + x_length / 2
 
-    anchor_point = anchor
-    anchor_arr = np.array(anchor_point)
-    for align_instr in align:
-        if align_instr == "center":
-            anchor_arr = anchor_arr - np.array([b / 2, d / 2, h / 2])
+        y0 = center[1] - y_length / 2
+        y1 = center[1] + y_length / 2
 
-    anchor_x, anchor_y, anchor_z = anchor_arr
-
-    x0 = anchor_x
-    x1 = b + anchor_x
-
-    y0 = anchor_y
-    y1 = d + anchor_y
-
-    z0 = anchor_z
-    z1 = h + anchor_z
+        z0 = center[2] - z_length / 2
+        z1 = center[2] + z_length / 2
 
     x_array = [x0, x1, x1, x0, x0, x1, x1, x0]
     y_array = [y0, y0, y1, y1, y0, y0, y1, y1]
@@ -36,7 +31,6 @@ def box(
     mesh = go.Mesh3d(
         x=x_array, y=y_array, z=z_array, opacity=opacity, color=color, alphahull=0
     )
-
     return mesh
 
 
