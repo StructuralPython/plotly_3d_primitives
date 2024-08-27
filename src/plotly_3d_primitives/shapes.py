@@ -28,9 +28,23 @@ def cube(
     y_array = [y0, y0, y1, y1, y0, y0, y1, y1]
     z_array = [z0, z0, z0, z0, z1, z1, z1, z1]
 
+    i_array = [0, 1, 4, 5, 0, 1, 0, 3, 3, 1, 1, 2]
+    j_array = [1, 2, 5, 6, 1, 4, 3, 4, 2, 2, 5, 6]
+    k_array = [3, 3, 7, 7, 4, 5, 4, 7, 7, 6, 6, 7]
+
     mesh = go.Mesh3d(
         x=x_array, y=y_array, z=z_array, opacity=opacity, color=color, alphahull=0
     )
+    # mesh = go.Mesh3d(
+    #     x=x_array, 
+    #     y=y_array, 
+    #     z=z_array,
+    #     i=i_array,
+    #     j=j_array,
+    #     k=k_array,
+    #     opacity=opacity, 
+    #     color=color,
+    # )
     return mesh
 
 
