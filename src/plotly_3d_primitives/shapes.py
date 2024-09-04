@@ -196,6 +196,7 @@ def rectangular_grid(
     x_dir = (1, 0, 0)
     y_dir = (0, 1, 0)
     z_dir = (0, 0, 1)
+    assumed_normal = z_dir
     norm = np.linalg.norm(normal)
     cos_alpha = np.dot(x_dir, normal) / norm
     cos_beta = np.dot(y_dir, normal) / norm
@@ -212,6 +213,7 @@ def rectangular_grid(
         [1-cos_gamma, cos_gamma, 0],
         [0, 0, 1]
     ])
+
 
     # # The projection of the normal on each plane
     # xy_proj = np.array([normal[0], normal[1], 0])
