@@ -161,7 +161,7 @@ def rectangular_grid(
     center=(0.0, 0.0, 0.0),
     b=1.0,
     d=1.0,
-    normal=(1.0, 0.0, 0.0),
+    normal=(0., 0., 1.0),
     rows=1,
     cols=1,
     color: str = "#aaa"
@@ -191,6 +191,63 @@ def rectangular_grid(
     # nodes
     center = np.array(center)
     normal = np.array(normal)
+
+    # Direction cosines
+    x_dir = (1, 0, 0)
+    y_dir = (0, 1, 0)
+    z_dir = (0, 0, 1)
+    norm = np.linalg.norm(normal)
+    cos_alpha = np.dot(x_dir, normal) / norm
+    cos_beta = np.dot(y_dir, normal) / norm
+    cos_gamma = np.dot(z_dir, normal) / norm
+
+    pitch_rot = np.array([
+        [cos_beta, 0, 1-cos_beta],
+        [0, 1, 0],
+        [-1-cos_beta, 0, cos_beta]
+    ])
+
+    yaw_rot = np.array([
+        [cos_gamma, -1-cos_gamma, 0],
+        [1-cos_gamma, cos_gamma, 0],
+        [0, 0, 1]
+    ])
+
+    # # The projection of the normal on each plane
+    # xy_proj = np.array([normal[0], normal[1], 0])
+    # yz_proj = np.array([0, normal[1], normal[2]])
+    # xz_proj = np.array([normal[0], 0, normal[2]])
+
+    # xy_perp = np.array([-normal[1], normal[0], 0])
+    # yz_perp = np.array([0, normal[2], -normal[1]])
+    # xz_perp = np.array([normal[2], 0, -normal[0]])
+
+    # # Go "down" to the mid-point of the bottom edge of the rectangle
+    # bot_mid_point = (
+    #     center 
+    #     - (
+    #         yz_perp / np.linalg.norm(yz_perp) if np.sum(yz_perp) != 0 else np.zeros(3)
+    #         + xz_perp / np.linalg.norm(xz_perp) if np.sum(xz_perp) != 0 else np.zeros(3)
+    #     ) / 2**0.5 * d/2
+    # )
+    # # Then go "left" to the bottom-left corner of the rectangle for the "A" point
+    # A_point = bot_mid_point - (xy_perp / np.linalg.norm(xy_perp) if np.sum(xy_perp) != 0 else np.zeros(3)) * b/2
+
+    # # Go "up" to the mid-poitn of the top edge of the rectangle
+    # top_mid_point = (
+    #     center 
+    #     + (
+    #         yz_perp / np.linalg.norm(yz_perp) if np.sum(yz_perp) != 0 else np.zeros(3)
+    #         + xz_perp / np.linalg.norm(xz_perp) if np.sum(xz_perp) != 0 else np.zeros(3)
+    #     ) / 2**0.5 * d/2
+    # )
+    # print(bot_mid_point, top_mid_point)
+    # # Then go "right" to the top-right corner of the rectangle for the "B" point
+    # B_point = top_mid_point + (xy_perp / np.linalg.norm(xy_perp) if np.sum(xy_perp) != 0 else np.zeros(3)) * b/2
+    # hypot_length = np.sqrt((b)**2 + (d)**2)
+
+    # print(hypot_length)
+    # print(np.linalg.norm(B_point - A_point))
 
 
     # Plane equation
