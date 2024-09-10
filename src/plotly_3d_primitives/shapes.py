@@ -277,3 +277,84 @@ def rectangular_grid(
             tri_1 = [anchor_node, anchor_node + mod_ro, anchor_node + mod_ro + 1]
             tri_2 = [anchor_node, anchor_node + 1, anchor_node + mod_ro + 1]
 
+# From Pyvista
+def translate(surf, center=(0.0, 0.0, 0.0), direction=(1.0, 0.0, 0.0)):
+    """Translate and orient a mesh to a new center and direction.
+
+    By default, the input mesh is considered centered at the origin
+    and facing in the x direction.
+
+    Parameters
+    ----------
+    surf : pyvista.core.pointset.PolyData
+        Mesh to be translated and oriented.
+    center : tuple, optional, default: (0.0, 0.0, 0.0)
+        Center point to which the mesh should be translated.
+    direction : tuple, optional, default: (1.0, 0.0, 0.0)
+        Direction vector along which the mesh should be oriented.
+
+    """
+    normx = np.array(direction) / np.linalg.norm(direction)
+    normy_temp = [0.0, 1.0, 0.0]
+
+    # Adjust normy if collinear with normx since cross-product will
+    # be zero otherwise
+    if np.allclose(normx, [0, 1, 0]):
+        normy_temp = [-1.0, 0.0, 0.0]
+    elif np.allclose(normx, [0, -1, 0]):
+        normy_temp = [1.0, 0.0, 0.0]
+
+    normz = np.cross(normx, normy_temp)
+    normz /= np.linalg.norm(normz)
+    normy = np.cross(normz, normx)
+
+    trans = np.zeros((4, 4))
+    trans[:3, 0] = normx
+    trans[:3, 1] = normy
+    trans[:3, 2] = normz
+    trans[3, 3] = 1
+
+    surf.transform(trans)
+    if not np.allclose(center, [0.0, 0.0, 0.0]):
+        surf.points += np.array(center, dtype=surf.points.dtype)
+
+# Modified - Reference: https://www.euclideanspace.com/maths/geometry/affine/matrix4x4/index.htm
+def transform(surf, center=(0.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0)):
+    """Translate and orient a mesh to a new center and direction.
+
+    By default, the input mesh is considered centered at the origin
+    and facing in the z direction.
+
+    Parameters
+    ----------
+    surf : pyvista.core.pointset.PolyData
+        Mesh to be translated and oriented.
+    center : tuple, optional, default: (0.0, 0.0, 0.0)
+        Center point to which the mesh should be translated.
+    direction : tuple, optional, default: (0.0, 0.0, 1.0)
+        Direction vector along which the mesh should be oriented.
+
+    """
+    normz = np.array(direction) / np.linalg.norm(direction)
+    normy_temp = [0.0, 1.0, 0.0]
+
+    # Adjust normy if collinear with normx since cross-product will
+    # be zero otherwise
+    if np.allclose(normz, [0, 1, 0]):
+        normy_temp = [0.0, 0.0, -1.0]
+    elif np.allclose(normz, [0, -1, 0]):
+        normy_temp = [0.0, 0.0, 1.0]
+
+    normx = np.cross(normz, normy_temp)
+    normx /= np.linalg.norm(normx)
+    normy = np.cross(normx, normz)
+
+    trans = np.zeros((4, 4))
+    trans[:3, 0] = normx
+    trans[:3, 1] = normy
+    trans[:3, 2] = normz
+    trans[3, 3] = 1
+
+    # surf.transform(trans)
+    # if not np.allclose(center, [0.0, 0.0, 0.0]):
+    #     surf.points += np.array(center, dtype=surf.points.dtype)
