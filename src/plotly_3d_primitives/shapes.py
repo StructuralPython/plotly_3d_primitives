@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import numpy as np
+import numpy.typing as nptp
 from typing import Optional
 
 
@@ -49,51 +50,97 @@ def cube(
 
 
 def prism(
-    n_points: int,
-    h: float,
-    align: list[str],
-    anchor: tuple = (0, 0, 0),
+    center=(0., 0., 0.),
+    direction=(1.0, 0.0, 0.0),
+    radius=0.5,
+    height=1.0,
+    n_sides:int = 4,
+    capping=True,
     color: str = "#aaa",
     opacity: float = 0.5,
 ) -> go.Mesh3d:
-    anchor_x, anchor_y, anchor_z = anchor
+    anchor_x, anchor_y, anchor_z = center
 
-    arr = np.linspace(0, 2 * np.pi, num=n_points, endpoint=False)
-    x_poly = np.cos(arr) + anchor_x
+    arr = np.linspace(0, 2 * np.pi, num=n_sides, endpoint=False)
+    z_poly = np.cos(arr) + anchor_z
     y_poly = np.sin(arr) + anchor_y
-    z_poly = np.zeros(n_points) + anchor_z
+    x_poly = np.zeros(n_sides) + anchor_x
 
-    x_array = np.concat([x_poly, x_poly])
+    x_array = np.concat([x_poly, x_poly + height])
     y_array = np.concat([y_poly, y_poly])
-    z_array = np.concat([z_poly, z_poly + h])
+    z_array = np.concat([z_poly, z_poly])
+
+    matrix = build_point_matrix(x_array, y_array, z_array)
 
     return go.Mesh3d(
         x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
-    )
+    ), matrix
 
 
 def cone(
-    n_points: int,
-    h: float,
-    align: list[str],
-    anchor: tuple = (0, 0, 0),
+    center=(0.0, 0.0, 0.0),
+    direction=(1.0, 0.0, 0.0),
+    height=1.0,
+    radius: Optional[float] = None,
+    capping: bool = True,
+    angle: Optional[float]=None,
+    resolution: int = 6,
     color: str = "#aaa",
     opacity: float = 0.5,
 ) -> go.Mesh3d:
-    anchor_x, anchor_y, anchor_z = anchor
+    anchor_x, anchor_y, anchor_z = center
 
-    arr = np.linspace(0, 2 * np.pi, num=n_points, endpoint=False)
-    x_poly = np.cos(arr) + anchor_x
-    y_poly = np.sin(arr) + anchor_y
-    z_poly = np.zeros(n_points) + anchor_z
+    arr = np.linspace(
+        0 + np.radians(angle), 
+        2 * np.pi + np.radians(angle), 
+        num=resolution, 
+        endpoint=False
+    )
+    z_poly = np.cos(arr) * radius + anchor_x
+    y_poly = np.sin(arr) * radius + anchor_y
+    x_poly = np.zeros(resolution) + anchor_z
 
-    x_array = np.concat([x_poly, np.array([anchor_x])])
+    z_array = np.concat([z_poly, np.array([anchor_z])])
     y_array = np.concat([y_poly, np.array([anchor_y])])
-    z_array = np.concat([z_poly, np.array([anchor_z + h])])
+    x_array = np.concat([x_poly, np.array([anchor_x + height])])
+
+    matrix = np.array([x_array, y_array, z_array, np.ones(len(x_array))])
 
     return go.Mesh3d(
         x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
-    )
+    ), matrix
+
+
+def sphere(
+    radius=0.5,
+    center=(0., 0., 0.),
+    direction=(0., 0., 1.0),
+    theta_resolution=30,
+    phi_resolution=30,
+    start_theta=0.0,
+    end_theta=360.0,
+    start_phi=0.0,
+    end_phi=180.0,
+    color="#555",
+    opacity=0.5,
+    
+) -> go.Mesh3d:
+    anchor_x, anchor_y, anchor_z = center
+    phi = np.linspace(start_phi, 2*np.radians(end_phi), 2*phi_resolution)
+    theta = np.linspace(start_theta, np.radians(end_theta), theta_resolution)
+
+    theta, phi = np.meshgrid(theta, phi)
+
+    radius_zy = radius*np.sin(theta)
+    z_array = np.ravel(anchor_z + np.cos(phi) * radius_zy)
+    y_array = np.ravel(anchor_y + np.sin(phi) * radius_zy)
+    x_array = np.ravel(anchor_x + radius * np.cos(theta))
+
+    matrix = np.array([x_array, y_array, z_array, np.ones(len(x_array))])
+
+    return go.Mesh3d(
+        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
+    ), matrix
 
 
 def line(
@@ -101,6 +148,7 @@ def line(
     pointb=(0.5, 0.0, 0.0),
     resolution=1,
     color: str = "#aaa",
+    line_width: float = 1.0,
     opacity: float = 0.8
 ):
     """
@@ -113,7 +161,61 @@ def line(
     y_array = np.linspace(y0, y1, resolution + 1, endpoint=True)
     z_array = np.linspace(z0, z1, resolution + 1, endpoint=True)
 
-    return go.Scatter3d(x=x_array, y=y_array, z=z_array, color=color, opacity=opacity, mode='lines')
+    matrix = np.array([x_array, y_array, z_array, np.ones(len(x_array))])
+    line_properties = dict(color=color, width=line_width)
+    return go.Scatter3d(x=x_array, y=y_array, z=z_array, opacity=opacity, mode='lines', line=line_properties), matrix
+
+
+def circular_arc_from_normal(
+    center=(0.0, 0.0, 0.0),
+    resolution=100,
+    normal=[0., 0., 1.],
+    angle=90.0,
+    polar=[1.0, 0.0, 0.0],
+    color="#555",
+    opacity=0.5,
+    line_width=1.0,
+) -> go.Mesh3d:
+    """
+    Create a circular arc defined by normal to the plane of the arc, and an
+    angle.
+
+    The number of segments composing the polyline is controlled by
+    setting the object resolution.
+
+    Parameters
+    ----------
+    center : sequence[float]
+        Center of the circle that defines the arc.
+
+    resolution : int, default: 100
+        The number of segments of the polyline that draws the arc.
+        Resolution of 1 will just create a line.
+
+    normal : sequence[float], optional
+        The normal vector to the plane of the arc.  By default it
+        points in the positive Z direction.
+
+    polar : sequence[float], optional
+        Starting point of the arc in cartesian coordinates.  By default it
+        is the unit vector in the positive x direction.
+
+    angle : float, optional
+        Arc length (in degrees) beginning at the polar vector.  The
+        direction is counterclockwise.  By default it is 90.
+    """
+    center = np.array(center)
+    anchor_x, anchor_y, anchor_z = center
+    radius = np.sqrt(np.sum((polar - center) ** 2, axis=0))
+    angles = np.linspace(0.0, np.radians(angle), resolution + 1)
+
+    x_array = np.cos(angles) + radius + anchor_x
+    y_array = np.sin(angles) + radius + anchor_y
+    z_array = np.zeros(resolution + 1) + anchor_z
+    arc = {'points': np.array([x_array, y_array]).T}
+    line_properties = dict(color=color, width=line_width)
+    return go.Scatter3d(x=x_array, y=y_array, z=z_array, line=line_properties, opacity=opacity, mode='lines'), arc
+
 
 
 def rectangle(
@@ -155,6 +257,50 @@ def rectangle(
     #     color=color,
     # )
     return mesh
+
+
+def build_point_matrix(
+    x_array: nptp.ArrayLike,
+    y_array: nptp.ArrayLike,
+    z_array: nptp.ArrayLike,
+) -> nptp.ArrayLike:
+    """
+    Returns a point matrix that can have transforms applied to it from a 
+    4x4 transformation matrix.
+    """
+    assert len(x_array) == len(y_array) == len(z_array)
+    matrix = np.array([x_array, y_array, z_array, np.ones(len(x_array))])
+    return matrix
+
+
+def transform_points(
+    point_matrix: nptp.ArrayLike,
+    new_center: tuple,
+    new_direction: tuple,
+) -> nptp.ArrayLike:
+    """
+    Returns the 'point_matrix' transformed so that it's center is
+    at 'new_center' and the point matrix is oriented toward
+    'new_direction'. Function performs re-orientation then translation.
+
+    point_matrix: a 4xn matrix where n is the number of points in
+        the collection. All points must be in 3-space.
+    new_center: a tuple indicating the center of the new point collection
+        (which is originally centered on (0, 0, 0))
+    new_direction: a tuple indicating a direction vector of the new point
+        collection (which is originally oriented toward (1, 0, 0)).
+    """
+    transform_matrix = reorient(direction=new_direction)
+    oriented_point_matrix = transform_matrix @ point_matrix
+    oriented_point_matrix_3 = oriented_point_matrix[0:3]
+    if not np.allclose(new_center, [0.0, 0.0, 0.0]):
+        translated_point_matrix = np.array(
+            new_center, 
+            dtype=point_matrix.dtype
+        ) + oriented_point_matrix_3.T
+    else:
+        translated_point_matrix = oriented_point_matrix_3.T
+    return translated_point_matrix.T
 
 
 def rectangular_grid(
@@ -278,18 +424,12 @@ def rectangular_grid(
             tri_2 = [anchor_node, anchor_node + 1, anchor_node + mod_ro + 1]
 
 # From Pyvista
-def translate(surf, center=(0.0, 0.0, 0.0), direction=(1.0, 0.0, 0.0)):
-    """Translate and orient a mesh to a new center and direction.
-
-    By default, the input mesh is considered centered at the origin
-    and facing in the x direction.
+def reorient(direction=(1.0, 0.0, 0.0)):
+    """Create a transformation matrix to re-orient a point matrix
+    to the provided direction.
 
     Parameters
     ----------
-    surf : pyvista.core.pointset.PolyData
-        Mesh to be translated and oriented.
-    center : tuple, optional, default: (0.0, 0.0, 0.0)
-        Center point to which the mesh should be translated.
     direction : tuple, optional, default: (1.0, 0.0, 0.0)
         Direction vector along which the mesh should be oriented.
 
@@ -314,47 +454,6 @@ def translate(surf, center=(0.0, 0.0, 0.0), direction=(1.0, 0.0, 0.0)):
     trans[:3, 2] = normz
     trans[3, 3] = 1
 
-    surf.transform(trans)
-    if not np.allclose(center, [0.0, 0.0, 0.0]):
-        surf.points += np.array(center, dtype=surf.points.dtype)
+    return trans
 
-# Modified - Reference: https://www.euclideanspace.com/maths/geometry/affine/matrix4x4/index.htm
-def transform(surf, center=(0.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0)):
-    """Translate and orient a mesh to a new center and direction.
 
-    By default, the input mesh is considered centered at the origin
-    and facing in the z direction.
-
-    Parameters
-    ----------
-    surf : pyvista.core.pointset.PolyData
-        Mesh to be translated and oriented.
-    center : tuple, optional, default: (0.0, 0.0, 0.0)
-        Center point to which the mesh should be translated.
-    direction : tuple, optional, default: (0.0, 0.0, 1.0)
-        Direction vector along which the mesh should be oriented.
-
-    """
-    normz = np.array(direction) / np.linalg.norm(direction)
-    normy_temp = [0.0, 1.0, 0.0]
-
-    # Adjust normy if collinear with normx since cross-product will
-    # be zero otherwise
-    if np.allclose(normz, [0, 1, 0]):
-        normy_temp = [0.0, 0.0, -1.0]
-    elif np.allclose(normz, [0, -1, 0]):
-        normy_temp = [0.0, 0.0, 1.0]
-
-    normx = np.cross(normz, normy_temp)
-    normx /= np.linalg.norm(normx)
-    normy = np.cross(normx, normz)
-
-    trans = np.zeros((4, 4))
-    trans[:3, 0] = normx
-    trans[:3, 1] = normy
-    trans[:3, 2] = normz
-    trans[3, 3] = 1
-
-    # surf.transform(trans)
-    # if not np.allclose(center, [0.0, 0.0, 0.0]):
-    #     surf.points += np.array(center, dtype=surf.points.dtype)
