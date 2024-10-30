@@ -62,9 +62,9 @@ def prism(
     anchor_x, anchor_y, anchor_z = center
 
     arr = np.linspace(0, 2 * np.pi, num=n_sides, endpoint=False)
-    z_poly = np.cos(arr) + anchor_z + radius
-    y_poly = np.sin(arr) + anchor_y + radius
-    x_poly = np.zeros(n_sides) + anchor_x
+    z_poly = np.cos(arr) * radius
+    y_poly = np.sin(arr) * radius
+    x_poly = np.zeros(n_sides)
 
     x_array = np.concat([x_poly, x_poly + height])
     y_array = np.concat([y_poly, y_poly])
@@ -83,7 +83,7 @@ def cone(
     height=1.0,
     radius: Optional[float] = None,
     capping: bool = True,
-    angle: Optional[float] = None,
+    angle: float = 0.0,
     resolution: int = 6,
     color: str = "#aaa",
     opacity: float = 0.5,
@@ -96,13 +96,13 @@ def cone(
         num=resolution,
         endpoint=False,
     )
-    z_poly = np.cos(arr) * radius + anchor_x
-    y_poly = np.sin(arr) * radius + anchor_y
-    x_poly = np.zeros(resolution) + anchor_z
+    z_poly = np.cos(arr) * radius
+    y_poly = np.sin(arr) * radius
+    x_poly = np.zeros(resolution)
 
-    z_array = np.concat([z_poly, np.array([anchor_z])])
-    y_array = np.concat([y_poly, np.array([anchor_y])])
-    x_array = np.concat([x_poly, np.array([anchor_x + height])])
+    z_array = np.concat([z_poly, np.array([0])])
+    y_array = np.concat([y_poly, np.array([0])])
+    x_array = np.concat([x_poly, np.array([height])])
 
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
 
@@ -125,8 +125,8 @@ def sphere(
     opacity=0.5,
 ) -> go.Mesh3d:
     anchor_x, anchor_y, anchor_z = center
-    phi = np.linspace(start_phi, 2 * np.radians(end_phi), 2 * phi_resolution)
-    theta = np.linspace(start_theta, np.radians(end_theta), theta_resolution)
+    phi = np.linspace(start_phi, 2 * np.radians(end_phi), phi_resolution + 1)
+    theta = np.linspace(start_theta, np.radians(end_theta), theta_resolution + 1)
 
     theta, phi = np.meshgrid(theta, phi)
 
@@ -213,11 +213,11 @@ def circular_arc_from_normal(
     center = np.array(center)
     anchor_x, anchor_y, anchor_z = center
     radius = np.sqrt(np.sum((polar - center) ** 2, axis=0))
-    angles = np.linspace(0.0, np.radians(angle), resolution + 1)
+    angles = np.linspace(0.0, np.radians(angle), resolution + 1, endpoint=True)
 
-    x_array = np.cos(angles) + radius + anchor_x
-    y_array = np.sin(angles) + radius + anchor_y
-    z_array = np.zeros(resolution + 1) + anchor_z
+    z_array = np.cos(angles) * radius + anchor_z
+    y_array = np.sin(angles) * radius + anchor_y
+    x_array = np.zeros(resolution + 1) + anchor_x
 
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, normal)
 
