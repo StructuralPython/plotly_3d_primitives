@@ -66,9 +66,9 @@ def prism(
     y_poly = np.sin(arr) * radius
     x_poly = np.zeros(n_sides)
 
-    x_array = np.concat([x_poly, x_poly + height])
-    y_array = np.concat([y_poly, y_poly])
-    z_array = np.concat([z_poly, z_poly])
+    x_array = np.concatenate([x_poly, x_poly + height])
+    y_array = np.concatenate([y_poly, y_poly])
+    z_array = np.concatenate([z_poly, z_poly])
 
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
 
@@ -100,9 +100,9 @@ def cone(
     y_poly = np.sin(arr) * radius
     x_poly = np.zeros(resolution)
 
-    z_array = np.concat([z_poly, np.array([0])])
-    y_array = np.concat([y_poly, np.array([0])])
-    x_array = np.concat([x_poly, np.array([height])])
+    z_array = np.concatenate([z_poly, np.array([0])])
+    y_array = np.concatenate([y_poly, np.array([0])])
+    x_array = np.concatenate([x_poly, np.array([height])])
 
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
 
@@ -221,7 +221,7 @@ def circular_arc_from_normal(
 
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, normal)
 
-    points = np.array([x_array, y_array]).T
+    points = np.array([x_array, y_array, z_array]).T
     line_properties = dict(color=color, width=line_width)
     if return_points:
         return go.Scatter3d(
