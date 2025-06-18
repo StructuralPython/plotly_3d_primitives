@@ -12,6 +12,7 @@ def cube(
     bounds: Optional[tuple[float]] = None,
     color: str = "#aaa",
     opacity: float = 0.5,
+    **kwargs
 ) -> go.Mesh3d:
     if bounds is not None and len(bounds) == 6:
         x0, x1, y0, y1, z0, z1 = bounds
@@ -34,7 +35,7 @@ def cube(
     k_array = [3, 3, 7, 7, 4, 5, 4, 7, 7, 6, 6, 7]
 
     mesh = go.Mesh3d(
-        x=x_array, y=y_array, z=z_array, opacity=opacity, color=color, alphahull=0
+        x=x_array, y=y_array, z=z_array, opacity=opacity, color=color, alphahull=0, **kwargs
     )
     # mesh = go.Mesh3d(
     #     x=x_array,
@@ -58,6 +59,7 @@ def prism(
     capping=True,
     color: str = "#aaa",
     opacity: float = 0.5,
+    **kwargs
 ) -> go.Mesh3d:
     anchor_x, anchor_y, anchor_z = center
 
@@ -73,7 +75,7 @@ def prism(
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
 
     return go.Mesh3d(
-        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
+        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity, **kwargs
     )
 
 
@@ -87,6 +89,7 @@ def cone(
     resolution: int = 6,
     color: str = "#aaa",
     opacity: float = 0.5,
+    **kwargs
 ) -> go.Mesh3d:
     anchor_x, anchor_y, anchor_z = center
 
@@ -107,7 +110,7 @@ def cone(
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
 
     return go.Mesh3d(
-        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
+        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity, **kwargs
     )
 
 
@@ -123,6 +126,7 @@ def sphere(
     end_phi=180.0,
     color="#555",
     opacity=0.5,
+    **kwargs
 ) -> go.Mesh3d:
     anchor_x, anchor_y, anchor_z = (0., 0., 0.)
     phi = np.linspace(start_phi, 2 * np.radians(end_phi), phi_resolution + 1)
@@ -138,7 +142,7 @@ def sphere(
     # print(center, direction)
     # print(y_array)
     return go.Mesh3d(
-        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
+        x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity, **kwargs
     )
 
 
@@ -149,6 +153,7 @@ def line(
     color: str = "#aaa",
     line_width: float = 1.0,
     opacity: float = 0.8,
+    **kwargs
 ):
     """
     Returns a trace of a line in 3d space.
@@ -168,6 +173,7 @@ def line(
         opacity=opacity,
         mode="lines",
         line=line_properties,
+        **kwargs
     )
 
 
@@ -181,6 +187,7 @@ def circular_arc_from_normal(
     opacity=0.5,
     line_width=1.0,
     return_points=False,
+    **kwargs
 ) -> go.Mesh3d:
     """
     Create a circular arc defined by normal to the plane of the arc, and an
@@ -231,6 +238,7 @@ def circular_arc_from_normal(
             line=line_properties,
             opacity=opacity,
             mode="lines",
+            **kwargs
         ), points
     else:
         return go.Scatter3d(
@@ -240,6 +248,7 @@ def circular_arc_from_normal(
             line=line_properties,
             opacity=opacity,
             mode="lines",
+            **kwargs
         )
 
 
@@ -250,6 +259,7 @@ def rectangle(
     normal=(1.0, 0.0, 0.0),
     color: str = "#aaa",
     opacity: float = 0.5,
+    **kwargs
 ) -> go.Mesh3d:
     z0 = center[2] - b / 2
     z1 = center[2] + b / 2
@@ -273,6 +283,7 @@ def rectangle(
         opacity=opacity,
         color=color,
         alphahull=0,
+        **kwargs
     )
     return mesh
 
