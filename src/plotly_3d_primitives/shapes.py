@@ -114,7 +114,7 @@ def cone(
 def sphere(
     radius=0.5,
     center=(0.0, 0.0, 0.0),
-    direction=(0.0, 0.0, 1.0),
+    direction=(1.0, 0.0, 0.0),
     theta_resolution=30,
     phi_resolution=30,
     start_theta=0.0,
@@ -124,7 +124,7 @@ def sphere(
     color="#555",
     opacity=0.5,
 ) -> go.Mesh3d:
-    anchor_x, anchor_y, anchor_z = center
+    anchor_x, anchor_y, anchor_z = (0., 0., 0.)
     phi = np.linspace(start_phi, 2 * np.radians(end_phi), phi_resolution + 1)
     theta = np.linspace(start_theta, np.radians(end_theta), theta_resolution + 1)
 
@@ -134,9 +134,9 @@ def sphere(
     z_array = np.ravel(anchor_z + np.cos(phi) * radius_zy)
     y_array = np.ravel(anchor_y + np.sin(phi) * radius_zy)
     x_array = np.ravel(anchor_x + radius * np.cos(theta))
-
     x_array, y_array, z_array = apply_transformations(x_array, y_array, z_array, center, direction)
-
+    # print(center, direction)
+    # print(y_array)
     return go.Mesh3d(
         x=x_array, y=y_array, z=z_array, alphahull=0, color=color, opacity=opacity
     )
@@ -326,6 +326,7 @@ def transform_points(
         collection (which is originally oriented toward (1, 0, 0)).
     """
     transform_matrix = reorient(direction=new_direction)
+    # print(transform_matrix)
     oriented_point_matrix = transform_matrix @ point_matrix
     oriented_point_matrix_3 = oriented_point_matrix[0:3]
     if not np.allclose(new_center, [0.0, 0.0, 0.0]):

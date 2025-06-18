@@ -20,3 +20,9 @@ test = ["pytest"]
 
 [project.urls]
 Home = "https://github.com/structuralpython/plotly_3d_primitives"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "nbformat>=5.10.4",
+]
